@@ -28,7 +28,8 @@ jobs:
 
       - name: Generar el póster
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # PERFIL_TOKEN (read:user) suma las contribuciones privadas; si no está, usa el token del repo.
+          GITHUB_TOKEN: ${{ secrets.PERFIL_TOKEN || secrets.GITHUB_TOKEN }}
           PERFIL: ${{ github.repository_owner }}
         run: python tools/poster.py
 
