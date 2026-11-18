@@ -18,7 +18,7 @@ import textwrap
 
 from contribuciones import CSS as CSS_CONTRIB
 from contribuciones import cuerpo_contribuciones, pedir_calendario
-from puente import cuerpo_puente
+from puente import CSS_PUENTE, cuerpo_puente
 from generar_ascii import (
     ASSETS,
     COLORES,
@@ -409,7 +409,7 @@ def armar(cal) -> str:
     contrib, descripcion = seccion_contribuciones(cal)
     partes = titulo() + seccion_puente() + seccion_sobre_mi() + seccion_proyectos() + seccion_stack() + contrib + pie()
     colores = "\n".join(f"  .{k} {{ fill: {v}; }}" for k, v in COLORES.items())
-    css = colores + CSS_TERMINAL + CSS_MATE + CSS_CONTRIB + CSS_POSTER
+    css = colores + CSS_TERMINAL + CSS_MATE + CSS_CONTRIB + CSS_PUENTE + CSS_POSTER
     resumen = (
         "Póster del perfil de Danilo Agustín Benitez, desarrollador full stack de Argentina. "
         "Proyectos: CRM Repuestos Requena, mobot, Dompri, EduControl y RunicTCG. "

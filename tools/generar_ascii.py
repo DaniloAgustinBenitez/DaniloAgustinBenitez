@@ -76,11 +76,12 @@ def clamp(v: float, a: float = 0.0, b: float = 1.0) -> float:
     return max(a, min(b, v))
 
 
-def rasterizar(campo, cols: int, filas: int, sub: int = 3):
+def rasterizar(campo, cols: int, filas: int, sub: int = 3, cw: float = CW, ch: float = CH):
     """Devuelve (caracteres, tonos) como listas de listas.
 
     El campo devuelve (luz, clase) o (luz, clase, rampa) para usar otra
     rampa de caracteres en esa zona (por ejemplo, agua con "~").
+    cw/ch: tamaño de la celda en píxeles (más chica = más detalle).
     """
     chars, tonos = [], []
     for r in range(filas):
@@ -89,8 +90,8 @@ def rasterizar(campo, cols: int, filas: int, sub: int = 3):
             total, clase, rampa = 0.0, None, RAMPA
             for sy in range(sub):
                 for sx in range(sub):
-                    px = (c + (sx + 0.5) / sub) * CW
-                    py = (r + (sy + 0.5) / sub) * CH
+                    px = (c + (sx + 0.5) / sub) * cw
+                    py = (r + (sy + 0.5) / sub) * ch
                     res = campo(px, py)
                     total += res[0]
                     if sx == sub // 2 and sy == sub // 2:
@@ -102,27 +103,31 @@ def rasterizar(campo, cols: int, filas: int, sub: int = 3):
                 v = 0.0  # sin trama en el cielo casi negro
             umbral = (BAYER[r % 4][c % 4] + 0.5) / 16 - 0.5
             idx = int(round(clamp(v * (len(rampa) - 1) + umbral * 0.9, 0, len(rampa) - 1)))
-            ch = rampa[idx]
+            car = rampa[idx]
             if clase is None:
                 clase = "tenue" if v < 0.24 else ("medio" if v < 0.58 else "claro")
-            fila_c.append(ch)
+            fila_c.append(car)
             fila_t.append(clase)
         chars.append(fila_c)
         tonos.append(fila_t)
     return chars, tonos
 
 
-def capas_texto(chars, tonos, ancho: float) -> str:
-    """Una capa de <text> por tono; cada fila ocupa exactamente el ancho total."""
+def capas_texto(chars, tonos, ancho: float, ch: float = CH, clase_extra: str = "") -> str:
+    """Una capa de <text> por tono; cada fila ocupa exactamente el ancho total.
+
+    ch: alto de fila; clase_extra se suma a cada fila (ej. "fino" para letra chica).
+    """
     salida = []
+    extra = f" {clase_extra}" if clase_extra else ""
     for tono in COLORES:
         for r, (fila_c, fila_t) in enumerate(zip(chars, tonos)):
-            s = "".join(ch if t == tono else " " for ch, t in zip(fila_c, fila_t))
+            s = "".join(c if t == tono else " " for c, t in zip(fila_c, fila_t))
             if not s.strip():
                 continue
-            y = (r + 1) * CH - 2.5
+            y = (r + 1) * ch - ch * 0.21
             salida.append(
-                f'<text class="{tono}" x="0" y="{y:.1f}" textLength="{ancho:.1f}" '
+                f'<text class="{tono}{extra}" x="0" y="{y:.1f}" textLength="{ancho:.1f}" '
                 f'lengthAdjust="spacingAndGlyphs">{html.escape(s)}</text>'
             )
     return "\n".join(salida)
