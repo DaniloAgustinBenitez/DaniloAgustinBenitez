@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import html
 import math
-import random
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -78,26 +77,32 @@ def clamp(v: float, a: float = 0.0, b: float = 1.0) -> float:
 
 
 def rasterizar(campo, cols: int, filas: int, sub: int = 3):
-    """Devuelve (caracteres, tonos) como listas de listas."""
+    """Devuelve (caracteres, tonos) como listas de listas.
+
+    El campo devuelve (luz, clase) o (luz, clase, rampa) para usar otra
+    rampa de caracteres en esa zona (por ejemplo, agua con "~").
+    """
     chars, tonos = [], []
     for r in range(filas):
         fila_c, fila_t = [], []
         for c in range(cols):
-            total, clase = 0.0, None
+            total, clase, rampa = 0.0, None, RAMPA
             for sy in range(sub):
                 for sx in range(sub):
                     px = (c + (sx + 0.5) / sub) * CW
                     py = (r + (sy + 0.5) / sub) * CH
-                    v, k = campo(px, py)
-                    total += v
+                    res = campo(px, py)
+                    total += res[0]
                     if sx == sub // 2 and sy == sub // 2:
-                        clase = k
+                        clase = res[1]
+                        if len(res) > 2:
+                            rampa = res[2]
             v = clamp(total / (sub * sub))
             if v < 0.05:
                 v = 0.0  # sin trama en el cielo casi negro
             umbral = (BAYER[r % 4][c % 4] + 0.5) / 16 - 0.5
-            idx = int(round(clamp(v * (len(RAMPA) - 1) + umbral * 0.9, 0, len(RAMPA) - 1)))
-            ch = RAMPA[idx]
+            idx = int(round(clamp(v * (len(rampa) - 1) + umbral * 0.9, 0, len(rampa) - 1)))
+            ch = rampa[idx]
             if clase is None:
                 clase = "tenue" if v < 0.24 else ("medio" if v < 0.58 else "claro")
             fila_c.append(ch)
@@ -153,100 +158,19 @@ def envolver(ancho: float, alto: float, cuerpo: str, css_extra: str, tarjeta: bo
 FONDO_FUENTE = FUENTE.replace("'", "&apos;")
 
 
-# ------------------------------------------------------------- la cordillera
+# ------------------------------------------------- la escena con la terminal
 
-CORD_COLS, CORD_FILAS = 128, 34
-CORD_W, CORD_H = CORD_COLS * CW, CORD_FILAS * CH
-
-LUNA = (150.0, 92.0, 36.0)
-CRATERES = [(-12, -8, 8), (10, 6, 6), (-4, 16, 5), (15, -14, 4)]
+# Tamaño de la escena principal (el puente, en tools/puente.py).
+ESC_COLS, ESC_FILAS = 128, 34
+ESC_W, ESC_H = ESC_COLS * CW, ESC_FILAS * CH
 
 # Terminal (en celdas): columna/fila de inicio y fin, inclusive.
 TERM_C0, TERM_C1, TERM_F0, TERM_F1 = 66, 123, 1, 11
 
-PICOS_FONDO = [(60, 228), (235, 185), (410, 212), (585, 150), (760, 196), (905, 226)]
-PICOS_MEDIO = [(0, 292), (150, 262), (330, 282), (500, 255), (690, 276), (870, 260)]
 
-
-def _cresta(x: float, picos, pendiente: float, semilla: int):
-    """Altura (y) de la cresta y el pico dominante en x."""
-    mejor_y, mejor = 1e9, None
-    for xc, yc in picos:
-        y = yc + abs(x - xc) * pendiente
-        if y < mejor_y:
-            mejor_y, mejor = y, (xc, yc)
-    mejor_y += (fbm(x, semilla * 50, 40, semilla) - 0.5) * 14
-    return mejor_y, mejor
-
-
-def campo_cordillera(x: float, y: float):
-    # Terminal: se deja limpio para dibujar el marco encima.
-    if TERM_C0 * CW - CW <= x <= (TERM_C1 + 2) * CW and TERM_F0 * CH - CH * 0.5 <= y <= (TERM_F1 + 1.5) * CH:
-        return 0.0, None
-
-    # Cerros del frente: lomas suaves, casi siluetas.
-    y_frente = 352 + math.sin(x / 95) * 12 + math.sin(x / 37 + 1) * 5
-    if y >= y_frente:
-        return 0.04 + fbm(x, y, 16, 7) ** 2 * 0.42, None
-
-    # Cordón medio.
-    y_medio, pico = _cresta(x, PICOS_MEDIO, 0.5, 3)
-    if y >= y_medio:
-        iluminado = x < pico[0]
-        base = 0.4 if iluminado else 0.2
-        return base + (fbm(x, y, 14, 11) - 0.5) * 0.24, None
-
-    # Cordillera del fondo, con nieve en las cumbres.
-    y_fondo, pico = _cresta(x, PICOS_FONDO, 0.78, 5)
-    if y >= y_fondo:
-        iluminado = x < pico[0]
-        prof = y - y_fondo
-        limite_nieve = 22 + (pico[1] < 200) * 18 + (fbm(x, y, 9, 13) - 0.5) * 18
-        if prof < limite_nieve and y < 250:
-            return (0.95 if iluminado else 0.66), None
-        base = 0.72 if iluminado else 0.42
-        return base + (fbm(x, y, 11, 17) - 0.5) * 0.22, None
-
-    # Luna con cráteres y halo.
-    lx, ly, lr = LUNA
-    d = math.hypot(x - lx, y - ly)
-    if d <= lr:
-        v = 0.97
-        for dx, dy, cr in CRATERES:
-            if math.hypot(x - lx - dx, y - ly - dy) < cr:
-                v = 0.7
-        # sombra suave del lado derecho
-        v -= clamp((x - lx) / lr, 0, 1) * 0.22
-        return v, None
-    halo = 0.38 * math.exp(-(d - lr) / 20)
-
-    # Cielo: casi negro, apenas más claro cerca del horizonte.
-    cielo = 0.11 * (y / CORD_H) ** 3
-    return cielo + halo, None
-
-
-def estrellas_cordillera() -> str:
-    rnd = random.Random(42)
-    salida = []
-    intentos = 0
-    while len(salida) < 26 and intentos < 2000:
-        intentos += 1
-        c, r = rnd.randrange(1, CORD_COLS - 1), rnd.randrange(0, 13)
-        x, y = (c + 0.5) * CW, (r + 0.5) * CH
-        if TERM_C0 - 2 <= c <= TERM_C1 + 2 and TERM_F0 - 1 <= r <= TERM_F1 + 1:
-            continue
-        if math.hypot(x - LUNA[0], y - LUNA[1]) < LUNA[2] + 40:
-            continue
-        if y > _cresta(x, PICOS_FONDO, 0.78, 5)[0] - 10:
-            continue
-        ch = rnd.choice(["*", "+", "·", "*", "✦"])
-        demora = rnd.uniform(0, 4)
-        dur = rnd.uniform(2.5, 5)
-        salida.append(
-            f'<text class="claro estrella" x="{c * CW:.1f}" y="{(r + 1) * CH - 2.5:.1f}" '
-            f'style="animation-delay:{demora:.2f}s;animation-duration:{dur:.2f}s">{html.escape(ch)}</text>'
-        )
-    return "\n".join(salida)
+def en_terminal(x: float, y: float) -> bool:
+    """True si el punto cae donde va la terminal (se deja limpio para dibujarla encima)."""
+    return TERM_C0 * CW - CW <= x <= (TERM_C1 + 2) * CW and TERM_F0 * CH - CH * 0.5 <= y <= (TERM_F1 + 1.5) * CH
 
 
 LINEAS_TERMINAL = [
@@ -315,7 +239,7 @@ def terminal() -> str:
     return "\n".join(salida)
 
 
-CSS_CORDILLERA = """
+CSS_TERMINAL = """
   .marco { fill: #7d8590; }
   .prompt { fill: #7ee787; }
   .salida { fill: #e6edf3; }
@@ -327,17 +251,6 @@ CSS_CORDILLERA = """
   @keyframes aparecer { to { opacity: 1; } }
   @keyframes parpadear { 50% { fill-opacity: 0; } }
 """
-
-
-def cuerpo_cordillera() -> str:
-    chars, tonos = rasterizar(campo_cordillera, CORD_COLS, CORD_FILAS)
-    return capas_texto(chars, tonos, CORD_W) + "\n" + estrellas_cordillera() + "\n" + terminal()
-
-
-def generar_cordillera(tarjeta: bool) -> str:
-    cuerpo = cuerpo_cordillera()
-    titulo = "Dibujo ASCII de la cordillera de noche con una terminal que escribe: whoami, danilo benitez, full stack developer"
-    return envolver(CORD_W, CORD_H, cuerpo, CSS_CORDILLERA, tarjeta, titulo)
 
 
 # -------------------------------------------------------------- el tech stack
@@ -359,7 +272,7 @@ STACK_FILAS = len(STACK) + 6
 
 def generar_stack(tarjeta: bool) -> str:
     titulo = "Tech stack: " + "; ".join(f"{c}: {i}" for c, i in STACK)
-    return envolver(STACK_COLS * CW, STACK_FILAS * CH, cuerpo_stack(), CSS_CORDILLERA, tarjeta, titulo)
+    return envolver(STACK_COLS * CW, STACK_FILAS * CH, cuerpo_stack(), CSS_TERMINAL, tarjeta, titulo)
 
 
 def cuerpo_stack() -> str:
@@ -522,7 +435,7 @@ def main() -> None:
 
     destino = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
     destino.mkdir(parents=True, exist_ok=True)
-    for nombre, gen in (("cordillera", generar_cordillera), ("mate", generar_mate), ("stack", generar_stack)):
+    for nombre, gen in (("mate", generar_mate), ("stack", generar_stack)):
         (destino / f"{nombre}.svg").write_text(gen(True), encoding="utf-8")
         print(destino / f"{nombre}.svg")
 

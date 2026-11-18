@@ -1,6 +1,6 @@
 """Arma el póster del perfil (assets/poster.svg).
 
-Junta en una sola imagen los dibujos ASCII (cordillera, mate, stack), el panel
+Junta en una sola imagen los dibujos ASCII (puente, mate, stack), el panel
 de contribuciones y los adornos de estilo póster: paneles de borde fino,
 entradas de diccionario, código de barras, grilla deformada, espiral, etc.
 
@@ -18,13 +18,14 @@ import textwrap
 
 from contribuciones import CSS as CSS_CONTRIB
 from contribuciones import cuerpo_contribuciones, pedir_calendario
+from puente import cuerpo_puente
 from generar_ascii import (
     ASSETS,
     COLORES,
-    CSS_CORDILLERA,
+    CSS_TERMINAL,
     CSS_MATE,
     FUENTE,
-    cuerpo_cordillera,
+
     cuerpo_mate,
     cuerpo_stack,
 )
@@ -225,14 +226,14 @@ def titulo():
     return s
 
 
-def seccion_cordillera():
+def seccion_puente():
     s = [panel(24, 262, 912, 412)]
-    s.append(ascii_en(42, 274, 0.95, cuerpo_cordillera()))
-    s.append(etiqueta_marco(56, 262, "FIG. 01 — CORDILLERA"))
+    s.append(ascii_en(42, 274, 0.95, cuerpo_puente()))
+    s.append(etiqueta_marco(56, 262, "FIG. 01 — PUENTE GRAL. BELGRANO"))
     s.append(globo(902, 262))
     s.append(
         '<text class="p-vertical" transform="translate(15 468) rotate(-90)" text-anchor="middle">'
-        "HECHO CON MATE · DESDE ARGENTINA</text>"
+        "RESISTENCIA — CORRIENTES · 1973</text>"
     )
     return s
 
@@ -406,9 +407,9 @@ FILTROS = """
 
 def armar(cal) -> str:
     contrib, descripcion = seccion_contribuciones(cal)
-    partes = titulo() + seccion_cordillera() + seccion_sobre_mi() + seccion_proyectos() + seccion_stack() + contrib + pie()
+    partes = titulo() + seccion_puente() + seccion_sobre_mi() + seccion_proyectos() + seccion_stack() + contrib + pie()
     colores = "\n".join(f"  .{k} {{ fill: {v}; }}" for k, v in COLORES.items())
-    css = colores + CSS_CORDILLERA + CSS_MATE + CSS_CONTRIB + CSS_POSTER
+    css = colores + CSS_TERMINAL + CSS_MATE + CSS_CONTRIB + CSS_POSTER
     resumen = (
         "Póster del perfil de Danilo Agustín Benitez, desarrollador full stack de Argentina. "
         "Proyectos: CRM Repuestos Requena, mobot, Dompri, EduControl y RunicTCG. "
