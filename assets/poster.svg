@@ -706,7 +706,7 @@
 <g class="col" style="animation-delay:1.250s"><text class="n0" x="763.2" y="33.5">·</text><text class="n2" x="763.2" y="45.5">+</text><text class="n0" x="763.2" y="57.5">·</text><text class="n1" x="763.2" y="69.5">:</text><text class="n1" x="763.2" y="81.5">:</text><text class="n0" x="763.2" y="93.5">·</text><text class="n0" x="763.2" y="105.5">·</text></g>
 <text class="rotulo" x="763.2" y="129.5">nov</text>
 <g class="col" style="animation-delay:1.275s"><text class="n0" x="777.6" y="33.5">·</text><text class="n0" x="777.6" y="45.5">·</text><text class="n4" x="777.6" y="57.5">@</text><text class="n0" x="777.6" y="69.5">·</text><text class="n3" x="777.6" y="81.5">#</text><text class="n2" x="777.6" y="93.5">+</text><text class="n1" x="777.6" y="105.5">:</text></g>
-<g class="col" style="animation-delay:1.300s"><text class="n0" x="792.0" y="33.5">·</text><text class="n2" x="792.0" y="45.5">+</text><text class="n2" x="792.0" y="57.5">+</text></g>
+<g class="col" style="animation-delay:1.300s"><text class="n0" x="792.0" y="33.5">·</text><text class="n2" x="792.0" y="45.5">+</text><text class="n2" x="792.0" y="57.5">+</text><text class="n0" x="792.0" y="69.5">·</text></g>
 <text class="rotulo" x="0.0" y="153.5">racha más larga </text>
 <text class="dato" x="115.2" y="153.5">8 días</text>
 <text class="rotulo" x="158.4" y="153.5">  ·  racha actual </text>
