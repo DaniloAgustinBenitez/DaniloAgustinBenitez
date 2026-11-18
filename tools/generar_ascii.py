@@ -5,8 +5,8 @@ coordenadas de píxel del SVG. El campo se muestrea por celda de carácter, se
 tramea con una matriz de Bayer y se convierte en caracteres de más o menos
 "densidad". El resultado es texto monoespaciado dentro de un SVG animado.
 
-Uso:  python tools/generar_ascii.py
-Salida: assets/cordillera-{oscuro,claro}.svg y assets/mate-{oscuro,claro}.svg
+Es la biblioteca de dibujos del póster (tools/poster.py).
+Para ver cada pieza suelta: python tools/generar_ascii.py <carpeta>
 """
 
 from __future__ import annotations
@@ -259,10 +259,10 @@ LINEAS_TERMINAL = [
 ]
 
 
-def terminal() -> str:
-    c0, c1, f0, f1 = TERM_C0, TERM_C1, TERM_F0, TERM_F1
+def marco(c0: int, c1: int, f0: int, f1: int, titulo: str) -> list[str]:
+    """Ventana de terminal dibujada con caracteres de caja (columnas/filas inclusive)."""
     ancho_cel = c1 - c0 + 1
-    titulo = " danilo@argentina: ~ "
+    titulo = f" {titulo} "
     controles = " ─ □ × "
     relleno = ancho_cel - 2 - len(titulo) - len(controles) - 1
     filas = ["┌─" + titulo + "─" * relleno + controles + "┐"]
@@ -278,6 +278,24 @@ def terminal() -> str:
             f'<text class="marco" x="{c0 * CW:.1f}" y="{y:.1f}" textLength="{ancho:.1f}" '
             f'lengthAdjust="spacingAndGlyphs">{html.escape(fila)}</text>'
         )
+    return salida
+
+
+def tipear(texto: str, clase: str, x0: float, y: float, inicio: float, paso: float) -> list[str]:
+    """Una <text> por letra, cada una aparece con su demora (efecto de tipeo)."""
+    salida = []
+    for k, ch in enumerate(texto):
+        if ch != " ":
+            salida.append(
+                f'<text class="{clase} letra" x="{x0 + k * CW:.1f}" y="{y:.1f}" '
+                f'style="animation-delay:{inicio + k * paso:.3f}s">{html.escape(ch)}</text>'
+            )
+    return salida
+
+
+def terminal() -> str:
+    c0, c1, f0, f1 = TERM_C0, TERM_C1, TERM_F0, TERM_F1
+    salida = marco(c0, c1, f0, f1, "danilo@argentina: ~")
 
     # Texto que se va escribiendo, letra por letra (cada letra aparece con su demora).
     tiempo = 0.6
@@ -285,13 +303,7 @@ def terminal() -> str:
     for i, (tipo, texto) in enumerate(LINEAS_TERMINAL):
         y = (f0 + 3 + i) * CH - 2.5
         paso = 0.06 if tipo == "prompt" else 0.018
-        for k, ch in enumerate(texto):
-            if ch == " ":
-                continue
-            salida.append(
-                f'<text class="{tipo} letra" x="{x0 + k * CW:.1f}" y="{y:.1f}" '
-                f'style="animation-delay:{tiempo + k * paso:.3f}s">{html.escape(ch)}</text>'
-            )
+        salida += tipear(texto, tipo, x0, y, tiempo, paso)
         tiempo += len(texto) * paso + (0.3 if tipo == "prompt" else 0.55)
 
     # Cursor parpadeante después de la última línea.
@@ -317,11 +329,76 @@ CSS_CORDILLERA = """
 """
 
 
-def generar_cordillera(tarjeta: bool) -> str:
+def cuerpo_cordillera() -> str:
     chars, tonos = rasterizar(campo_cordillera, CORD_COLS, CORD_FILAS)
-    cuerpo = capas_texto(chars, tonos, CORD_W) + "\n" + estrellas_cordillera() + "\n" + terminal()
+    return capas_texto(chars, tonos, CORD_W) + "\n" + estrellas_cordillera() + "\n" + terminal()
+
+
+def generar_cordillera(tarjeta: bool) -> str:
+    cuerpo = cuerpo_cordillera()
     titulo = "Dibujo ASCII de la cordillera de noche con una terminal que escribe: whoami, danilo benitez, full stack developer"
     return envolver(CORD_W, CORD_H, cuerpo, CSS_CORDILLERA, tarjeta, titulo)
+
+
+# -------------------------------------------------------------- el tech stack
+
+STACK = [
+    ("backend", "java · spring boot · node.js · express · hono"),
+    ("frontend", "react · typescript · tailwind · tanstack query"),
+    ("datos", "postgresql · redis · mysql · prisma"),
+    ("tiempo-real", "websocket / stomp · socket.io"),
+    ("seguridad", "keycloak · row-level security"),
+    ("infra", "docker · github actions · cloudflare · railway"),
+    ("observabilidad", "prometheus · grafana · k6"),
+    ("testing", "junit · testcontainers · vitest · playwright"),
+    ("ia", "openai gpt-4o · whisper"),
+]
+STACK_COLS = 80
+STACK_FILAS = len(STACK) + 6
+
+
+def generar_stack(tarjeta: bool) -> str:
+    titulo = "Tech stack: " + "; ".join(f"{c}: {i}" for c, i in STACK)
+    return envolver(STACK_COLS * CW, STACK_FILAS * CH, cuerpo_stack(), CSS_CORDILLERA, tarjeta, titulo)
+
+
+def cuerpo_stack() -> str:
+    c1, f1 = STACK_COLS - 1, STACK_FILAS - 1
+    salida = marco(0, c1, 0, f1, "danilo@argentina: ~/stack")
+    x0 = 2 * CW
+
+    comando = "$ tree --dirsfirst ~/stack"
+    tiempo = 0.4
+    salida += tipear(comando, "prompt", x0, 3 * CH - 2.5, tiempo, 0.05)
+    tiempo += len(comando) * 0.05 + 0.35
+
+    ancho_carpeta = max(len(c) for c, _ in STACK) + 2
+    for i, (carpeta, items) in enumerate(STACK):
+        y = (4 + i) * CH - 2.5
+        rama = "└── " if i == len(STACK) - 1 else "├── "
+        demora = f'style="animation-delay:{tiempo:.2f}s"'
+        salida.append(f'<text class="marco letra" x="{x0:.1f}" y="{y:.1f}" {demora}>{rama}</text>')
+        salida.append(
+            f'<text class="prompt letra" x="{x0 + 4 * CW:.1f}" y="{y:.1f}" {demora}>{html.escape(carpeta)}/</text>'
+        )
+        salida.append(
+            f'<text class="salida letra" x="{x0 + (4 + ancho_carpeta) * CW:.1f}" y="{y:.1f}" '
+            f'{demora}>{html.escape(items)}</text>'
+        )
+        tiempo += 0.12
+
+    y = (4 + len(STACK) + 1) * CH - 2.5
+    resumen = f"{len(STACK)} directorios, {sum(len(i.split(' · ')) for _, i in STACK)} herramientas"
+    salida.append(
+        f'<text class="marco letra" x="{x0:.1f}" y="{y:.1f}" style="animation-delay:{tiempo:.2f}s">'
+        f'{html.escape(resumen)}</text>'
+    )
+    salida.append(
+        f'<text class="acento cursor" x="{x0 + (len(resumen) + 2) * CW:.1f}" y="{y:.1f}" '
+        f'style="animation-delay:{tiempo + 0.3:.2f}s">$ █</text>'
+    )
+
+    return "\n".join(salida)
 
 
 # ------------------------------------------------------------------- el mate
@@ -427,21 +504,27 @@ def vapor() -> str:
     return "\n".join(salida)
 
 
-def generar_mate(tarjeta: bool) -> str:
+def cuerpo_mate() -> str:
     chars, tonos = rasterizar(campo_mate, MATE_COLS, MATE_FILAS)
-    cuerpo = capas_texto(chars, tonos, MATE_W) + "\n" + vapor()
+    return capas_texto(chars, tonos, MATE_W) + "\n" + vapor()
+
+
+def generar_mate(tarjeta: bool) -> str:
     titulo = "Dibujo ASCII de un mate con bombilla y vapor"
-    return envolver(MATE_W, MATE_H, cuerpo, CSS_MATE, tarjeta, titulo)
+    return envolver(MATE_W, MATE_H, cuerpo_mate(), CSS_MATE, tarjeta, titulo)
 
 
 # --------------------------------------------------------------------- main
 
 def main() -> None:
-    ASSETS.mkdir(exist_ok=True)
-    for nombre, gen in (("cordillera", generar_cordillera), ("mate", generar_mate)):
-        (ASSETS / f"{nombre}-oscuro.svg").write_text(gen(False), encoding="utf-8")
-        (ASSETS / f"{nombre}-claro.svg").write_text(gen(True), encoding="utf-8")
-        print(f"assets/{nombre}-oscuro.svg y assets/{nombre}-claro.svg")
+    """Escribe cada pieza suelta (para previsualizarla) en la carpeta indicada."""
+    import sys
+
+    destino = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
+    destino.mkdir(parents=True, exist_ok=True)
+    for nombre, gen in (("cordillera", generar_cordillera), ("mate", generar_mate), ("stack", generar_stack)):
+        (destino / f"{nombre}.svg").write_text(gen(True), encoding="utf-8")
+        print(destino / f"{nombre}.svg")
 
 
 if __name__ == "__main__":
