@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 2290" width="960" height="2290" role="img" aria-label="Póster del perfil de Danilo Agustín Benitez, desarrollador full stack de Argentina. Proyectos: CRM Repuestos Requena, mobot, Dompri, EduControl y RunicTCG. Stack: Java, Spring Boot, React, TypeScript, PostgreSQL, Redis, Docker. Contribuciones de DaniloAgustinBenitez en el último año: 627. Racha más larga 9 días, racha actual 9 días.">
-<title>Póster del perfil de Danilo Agustín Benitez, desarrollador full stack de Argentina. Proyectos: CRM Repuestos Requena, mobot, Dompri, EduControl y RunicTCG. Stack: Java, Spring Boot, React, TypeScript, PostgreSQL, Redis, Docker. Contribuciones de DaniloAgustinBenitez en el último año: 627. Racha más larga 9 días, racha actual 9 días.</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 2290" width="960" height="2290" role="img" aria-label="Póster del perfil de Danilo Agustín Benitez, desarrollador full stack de Argentina. Proyectos: CRM Repuestos Requena, mobot, Dompri, EduControl y RunicTCG. Stack: Java, Spring Boot, React, TypeScript, PostgreSQL, Redis, Docker. Contribuciones de DaniloAgustinBenitez en el último año: 631. Racha más larga 9 días, racha actual 1 días.">
+<title>Póster del perfil de Danilo Agustín Benitez, desarrollador full stack de Argentina. Proyectos: CRM Repuestos Requena, mobot, Dompri, EduControl y RunicTCG. Stack: Java, Spring Boot, React, TypeScript, PostgreSQL, Redis, Docker. Contribuciones de DaniloAgustinBenitez en el último año: 631. Racha más larga 9 días, racha actual 1 días.</title>
 <defs>
 <filter id="grunge" x="-5%" y="-5%" width="110%" height="110%">
   <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="ruido"/>
@@ -638,7 +638,7 @@
 <text class="p-italica-chica" x="686.0" y="1842.0" text-anchor="start">las herramientas de todos los días.</text>
 <rect class="p-panel" x="24" y="1880" width="912" height="200"/>
 <g class="ascii" xml:space="preserve" transform="translate(76.80000000000001 1904) scale(1.0)"><text class="dato" x="0.0" y="9.5">$ git log --since=&#x27;1 year ago&#x27; | contribuciones</text>
-<text class="titulo" x="676.8" y="9.5">627 contribuciones</text>
+<text class="titulo" x="676.8" y="9.5">631 contribuciones</text>
 <text class="rotulo" x="0.0" y="45.5">lun</text>
 <text class="rotulo" x="0.0" y="69.5">mié</text>
 <text class="rotulo" x="0.0" y="93.5">vie</text>
@@ -706,13 +706,13 @@
 <text class="rotulo" x="748.8" y="129.5">nov</text>
 <g class="col" style="animation-delay:1.250s"><text class="n0" x="763.2" y="33.5">·</text><text class="n0" x="763.2" y="45.5">·</text><text class="n3" x="763.2" y="57.5">#</text><text class="n0" x="763.2" y="69.5">·</text><text class="n2" x="763.2" y="81.5">+</text><text class="n2" x="763.2" y="93.5">+</text><text class="n1" x="763.2" y="105.5">:</text></g>
 <g class="col" style="animation-delay:1.275s"><text class="n0" x="777.6" y="33.5">·</text><text class="n1" x="777.6" y="45.5">:</text><text class="n1" x="777.6" y="57.5">:</text><text class="n2" x="777.6" y="69.5">+</text><text class="n4" x="777.6" y="81.5">@</text><text class="n2" x="777.6" y="93.5">+</text><text class="n1" x="777.6" y="105.5">:</text></g>
-<g class="col" style="animation-delay:1.300s"><text class="n1" x="792.0" y="33.5">:</text><text class="n4" x="792.0" y="45.5">@</text><text class="n1" x="792.0" y="57.5">:</text><text class="n0" x="792.0" y="69.5">·</text></g>
+<g class="col" style="animation-delay:1.300s"><text class="n1" x="792.0" y="33.5">:</text><text class="n4" x="792.0" y="45.5">@</text><text class="n1" x="792.0" y="57.5">:</text><text class="n0" x="792.0" y="69.5">·</text><text class="n1" x="792.0" y="81.5">:</text></g>
 <text class="rotulo" x="0.0" y="153.5">racha más larga </text>
 <text class="dato" x="115.2" y="153.5">9 días</text>
 <text class="rotulo" x="158.4" y="153.5">  ·  racha actual </text>
-<text class="dato" x="288.0" y="153.5">9 días</text>
-<text class="rotulo" x="331.2" y="153.5">  ·  mejor día </text>
-<text class="dato" x="439.2" y="153.5">70 (21 sep)</text>
+<text class="dato" x="288.0" y="153.5">1 día</text>
+<text class="rotulo" x="324.0" y="153.5">  ·  mejor día </text>
+<text class="dato" x="432.0" y="153.5">70 (21 sep)</text>
 <text class="rotulo" x="669.6" y="153.5">menos </text>
 <text class="n0" x="712.8" y="153.5">· </text>
 <text class="n1" x="727.2" y="153.5">: </text>
